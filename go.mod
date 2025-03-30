@@ -1,3 +1,3 @@
-module github.com/magicgopher/go-example
+module github.com/magicgopher/gopher
 
-go 1.23.1
+go 1.24.1

@@ -7,7 +7,7 @@ import (
 
 func main() {
 	// 使用 os 包的 Create 函数创建文件
-	file, err := os.Create("file.txt")
+	file, err := os.Create("example.txt")
 	if err != nil {
 		fmt.Println("创建文件失败, Error:", err)
 		return

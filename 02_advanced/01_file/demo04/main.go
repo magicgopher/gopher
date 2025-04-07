@@ -6,26 +6,22 @@ import (
 )
 
 func main() {
-	// 使用 os 包的 Open 函数打开文件
-	file, err := os.Open("example.txt")
+	// 打开文件，指定文件的打开模式为只写和创建，权限为 0666
+	file, err := os.OpenFile("example.txt", os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println("文件打开失败, Error:", err)
+		return
+	}
+	// os.File 的 Write 方法用于将字节数组写入文件
+	n, err := file.WriteString("Hello, World!")
+	if err != nil {
+		fmt.Println("字节数组内容写入失败, Error:", err)
 		return
 	}
 
 	// 关闭文件
 	defer file.Close()
 
-	// 获取文件信息
-	fileInfo, err := file.Stat()
-	if err != nil {
-		fmt.Println("获取文件信息失败, Error:", err)
-		return
-	}
-
-	// 打印文件信息
-	fmt.Println("文件名:", fileInfo.Name())
-	fmt.Println("文件大小:", fileInfo.Size())
-	fmt.Println("修改时间:", fileInfo.ModTime())
-	fmt.Println("文件权限:", fileInfo.Mode())
+	// 输出打印信息
+	fmt.Println("文件写入成功！写入了", n, "个字节")
 }

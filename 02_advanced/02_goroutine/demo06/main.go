@@ -39,7 +39,7 @@ func sellTicket(window string) {
 			// 减票
 			ticket--
 		} else {
-			mutex.Unlock() // 释放锁
+			mutex.Unlock() // 即使没有卖出票也要释放锁，否则其他等待锁的 goroutine 将会一直阻塞，导致死锁
 			fmt.Printf("%s票已经卖完了...\n", window)
 			break // 票已经卖完
 		}

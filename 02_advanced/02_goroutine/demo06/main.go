@@ -39,7 +39,7 @@ func sellTicket(window string) {
 			// 减票
 			ticket--
 		} else {
-			//mutex.Unlock() // 释放锁
+			mutex.Unlock() // 释放锁
 			fmt.Printf("%s票已经卖完了...\n", window)
 			break // 票已经卖完
 		}

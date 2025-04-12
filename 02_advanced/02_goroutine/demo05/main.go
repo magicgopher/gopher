@@ -2,53 +2,36 @@ package main
 
 import (
 	"fmt"
-	"runtime"
-	"sync"
+	"math/rand"
 	"time"
 )
 
-// 票
-var ticket = 100
-
-// 计数器
-var wg sync.WaitGroup
-
-// 互斥锁
-var mutex sync.Mutex
+var ticket = 10 // 定义票全局变量，这个票就是临界资源
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	numWindows := 5
-	wg.Add(numWindows)
-	fmt.Printf("初始票数: %d\n", ticket)
+	// 这4个窗口表示4个goroutine，它们会操作同一个全局变量
+	go sellTicket("售票窗口1")
+	go sellTicket("售票窗口2")
+	go sellTicket("售票窗口3")
+	go sellTicket("售票窗口4")
 
-	for i := 1; i <= numWindows; i++ {
-		go sellTicket(i)
-	}
-
-	wg.Wait()
-	fmt.Println("售票结束")
-	fmt.Printf("最终剩余票数: %d (预期为 0，但很可能不正确)\n", ticket)
+	// 主 goroutine（main）睡眠4秒确保其他goroutine可以够时间运行完成
+	time.Sleep(4 * time.Second)
 }
 
-// sellTicket 卖票操作 没有使用锁会有临界资源安全问题
-//func sellTicket(window int) {
-//	for ticket > 0 {
-//		time.Sleep(20 * time.Millisecond)
-//		ticket--
-//		fmt.Printf("%d窗口正在售卖编号%d的票,剩余票数:%d\n", window, ticket+1, ticket)
-//	}
-//	wg.Done()
-//}
-
-// sellTicket 卖票操作 使用锁
-func sellTicket(window int) {
-	mutex.Lock() // 上锁
-	for ticket > 0 {
-		time.Sleep(20 * time.Millisecond)
-		ticket--
-		fmt.Printf("%d窗口正在售卖编号%d的票,剩余票数:%d\n", window, ticket+1, ticket)
+// sellTicket 函数模拟售票
+func sellTicket(window string) {
+	rand.NewSource(time.Now().UnixNano())
+	for {
+		if ticket > 0 {
+			// 模拟售票时间
+			time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+			fmt.Printf("%s正在售出:%d号票\n", window, ticket)
+			// 减票
+			ticket--
+		} else {
+			fmt.Printf("%s票已经卖完了...\n", window)
+			break // 票已经卖完
+		}
 	}
-	mutex.Unlock() // 释放锁
-	wg.Done()
 }

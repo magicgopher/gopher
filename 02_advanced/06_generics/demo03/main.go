@@ -1,42 +1,50 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
-// 示例：通用的 Set 结构
-// 实现一个可以存储任何可比较类型元素的集合，并提供添加、删除、检查元素是否存在等操作。
+// 泛型类型
 
-type Set[T comparable] struct {
-	elements map[T]bool
+// 示例：一个泛型栈类型的定义，它可以存储任意类型的数据。
+
+// Stack 栈
+type Stack[T any] struct {
+	data []T
 }
 
-func NewSet[T comparable]() *Set[T] {
-	return &Set[T]{elements: make(map[T]bool)}
+// Push 将元素压入栈
+func (s *Stack[T]) Push(x T) {
+	s.data = append(s.data, x)
 }
 
-func (s *Set[T]) Add(elem T) {
-	s.elements[elem] = true
-}
-
-func (s *Set[T]) Contains(elem T) bool {
-	return s.elements[elem]
-}
-
-func (s *Set[T]) Remove(elem T) {
-	delete(s.elements, elem)
-}
-
-func (s *Set[T]) Size() int {
-	return len(s.elements)
+// Pop 从栈中弹出元素
+func (s *Stack[T]) Pop() T {
+	if len(s.data) == 0 {
+		var zero T // 返回类型的零值
+		return zero
+	}
+	x := s.data[len(s.data)-1]
+	s.data = s.data[:len(s.data)-1]
+	return x
 }
 
 func main() {
-	intSet := NewSet[int]()
-	intSet.Add(1)
-	intSet.Add(2)
-	fmt.Println("int类型的set结构中是否包含1:", intSet.Contains(1)) // 输出: set结构中是否包含1: true
+	// 示例1：使用整数栈
+	var intStack Stack[int]
+	intStack.Push(1)
+	intStack.Push(2)
+	intStack.Push(3)
+	fmt.Println("整数栈弹出:", intStack.Pop()) // 输出: 3
+	fmt.Println("整数栈弹出:", intStack.Pop()) // 输出: 2
+	fmt.Println("整数栈弹出:", intStack.Pop()) // 输出: 1
+	fmt.Println("整数栈弹出:", intStack.Pop()) // 输出: 0（零值）
 
-	stringSet := NewSet[string]()
-	stringSet.Add("apple")
-	stringSet.Add("banana")
-	fmt.Println("string类型的Set结构中的大小:", stringSet.Size()) // 输出: string类型的Set结构中的大小: 2
+	// 示例2：使用字符串栈
+	var stringStack Stack[string]
+	stringStack.Push("hello")
+	stringStack.Push("world")
+	fmt.Println("字符串栈弹出:", stringStack.Pop()) // 输出: world
+	fmt.Println("字符串栈弹出:", stringStack.Pop()) // 输出: hello
+	fmt.Println("字符串栈弹出:", stringStack.Pop()) // 输出: ""（零值）
 }

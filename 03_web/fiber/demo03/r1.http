@@ -1,0 +1,10 @@
+### Request 1
+GET http://localhost:8080/hello%20world
+
+### Request 2: Test with name parameter
+GET http://localhost:3000/john
+Content-Type: application/json
+
+### Request 3: Test without name parameter
+GET http://localhost:3000/
+Content-Type: application/json

@@ -2,8 +2,7 @@ package singleton
 
 import "time"
 
-// 单例模式
-// 不加锁实现
+// 不加锁实现单例模式
 
 // 定义全局变量 singleton指针变量
 var instance *singleton

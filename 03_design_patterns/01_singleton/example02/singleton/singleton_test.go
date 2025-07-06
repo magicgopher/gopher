@@ -1,4 +1,4 @@
-package example02
+package singleton
 
 import (
 	"sync"

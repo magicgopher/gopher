@@ -63,6 +63,27 @@ func main() {
 	//	"k5",
 	//}
 	//mGetOption(keys)
+
+	// incr操作
+	//incrOption("num")
+
+	// incrby操作
+	//incrByOption("num", 5)
+
+	// incrbyfloat操作
+	//incrByFloatOption("num", 1.8)
+
+	// decr操作
+	//decrOption("num")
+
+	// decrby操作
+	//decrByOption("num", 5)
+
+	// del操作
+	//delOption("k1", "k2", "k3")
+
+	// expire操作
+	//expireOption("name", 20*time.Second)
 }
 
 // setOption 操作
@@ -78,7 +99,7 @@ func getOption(key string) {
 	result, err := rdb.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			log.Printf("Key [%s] 不存在\n", err)
+			log.Printf("key [%s] 不存在\n", err)
 			return
 		}
 		fmt.Printf("redis get操作失败: %v\n", err)
@@ -94,19 +115,19 @@ func ttlOption(key string) {
 
 	// 错误处理
 	if err != nil {
-		log.Printf("Redis TTL 命令执行失败: %v", err)
+		log.Printf("redis ttl 命令执行失败: %v", err)
 		return
 	}
 
 	if result < 0 {
 		if result == -2*time.Nanosecond || result == -2*time.Second {
-			fmt.Printf("Key: [%s] 不存在.\n", key)
+			fmt.Printf("key: [%s] 不存在.\n", key)
 		} else if result == -1*time.Nanosecond || result == -1*time.Second {
-			fmt.Println("Key 永久有效。")
+			fmt.Println("key 永久有效。")
 		}
 		return
 	}
-	fmt.Printf("Key [%s] 剩余有效期: %v\n", key, result)
+	fmt.Printf("key [%s] 剩余有效期: %v\n", key, result)
 }
 
 // getSetOption 设置一个key的值，并返回这个key的旧值
@@ -114,7 +135,7 @@ func getSetOption(key, newValue string) {
 	oldValue, err := rdb.GetSet(ctx, key, newValue).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			log.Printf("Key [%s] 之前不存在，已设置为新值: %s", key, newValue)
+			log.Printf("key [%s] 之前不存在，已设置为新值: %s", key, newValue)
 			fmt.Printf("key: [%v]; oldValue: [不存在/已新建]\n", key)
 			return
 		}
@@ -176,5 +197,111 @@ func mGetOption(keys []string) {
 		// 如果存在，val 是 interface{}，通常需要断言为 string
 		// 或者直接打印
 		fmt.Printf("Key: [%s] -> 结果: [%v]\n", key, val)
+	}
+}
+
+func incrOption(key string) {
+	// 先设置一个可以 Incr 的初始值
+	// 我们用 SetNX 保证只有在 Key 不存在时才初始化为 0
+	_, err := rdb.SetNX(ctx, key, "0", 0).Result()
+	if err != nil {
+		log.Printf("初始化 Key [%s] 失败: %v", key, err)
+		return
+	}
+
+	// 执行自增操作
+	// Incr 返回自增后的新值 (int64)
+	newValue, err := rdb.Incr(ctx, key).Result()
+
+	// 错误处理
+	if err != nil {
+		// 情况 A: Key 里的内容不是数字 (比如存的是 "abc")
+		// Redis 会返回: ERR value is not an integer or out of range
+		log.Printf("自增操作失败，Key [%s] 可能包含非数字内容: %v", key, err)
+		return
+	}
+
+	// 打印结果
+	fmt.Printf("Key [%s] 自增成功，当前值: %d\n", key, newValue)
+}
+
+func incrByOption(key string, increment int64) {
+	// 直接执行 IncrBy，如果 key 不存在，Redis 会自动创建并从 0 开始加
+	result, err := rdb.IncrBy(ctx, key, increment).Result()
+
+	// 错误处理
+	if err != nil {
+		log.Printf("IncrBy 操作失败 [key: %s, 增量: %d]: %v", key, increment, err)
+		return
+	}
+
+	// 打印结果
+	fmt.Printf("Key [%s] 成功增加 %d，当前最新值为: %d\n", key, increment, result)
+}
+
+func incrByFloatOption(key string, increment float64) {
+	// 直接执行 IncrByFloat
+	// result 是增加后的最终结果 (float64)
+	result, err := rdb.IncrByFloat(ctx, key, increment).Result()
+
+	// 处理错误
+	if err != nil {
+		// 常见错误场景：
+		// - Key 存储的内容不能转换为浮点数（例如存了非数字字符串）
+		// - 结果超出了浮点数的表示范围
+		log.Printf("IncrByFloat 操作失败 [key: %s, 增量: %f]: %v", key, increment, err)
+		return
+	}
+
+	// 使用 %.2f 格式化输出，保留两位小数
+	fmt.Printf("Key [%s] 成功增加 %.2f，当前最新值为: %.2f\n", key, increment, result)
+}
+
+func decrOption(key string) {
+	result, err := rdb.Decr(ctx, key).Result()
+	if err != nil {
+		log.Printf("Decr 失败 [key: %s]: %v", key, err)
+	}
+	fmt.Printf("Decr 成功，当前值: %d\n", result)
+}
+
+func decrByOption(key string, decrement int64) {
+	result, err := rdb.DecrBy(ctx, key, decrement).Result()
+	if err != nil {
+		log.Printf("DecrBy 失败 [key: %s]: %v", key, err)
+	}
+	fmt.Printf("DecrBy 成功，减去 %d 后当前值: %d\n", decrement, result)
+}
+
+func delOption(keys ...string) {
+	// Del 可以接收多个 key，如 rdb.Del(ctx, "k1", "k2")
+	count, err := rdb.Del(ctx, keys...).Result()
+
+	if err != nil {
+		log.Printf("Del 操作系统错误: %v", err)
+		return
+	}
+
+	// count 表示真正被删除掉的 key 的个数
+	if count == 0 {
+		fmt.Println("没有 key 被删除（这些 key 本来就不存在）")
+	} else {
+		fmt.Printf("成功删除 %d 个 key\n", count)
+	}
+}
+
+func expireOption(key string, expiration time.Duration) {
+	success, err := rdb.Expire(ctx, key, expiration).Result()
+
+	if err != nil {
+		log.Printf("Expire 操作系统错误: %v", err)
+		return
+	}
+
+	if success {
+		fmt.Printf("Key [%s] 已成功设置过期时间: %v\n", key, expiration)
+	} else {
+		// 这里的 false 通常意味着 key 不存在
+		fmt.Printf("Key [%s] 设置过期时间失败，可能该 key 不存在\n", key)
 	}
 }

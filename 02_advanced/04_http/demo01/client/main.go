@@ -18,7 +18,7 @@ func main() {
 	// 发起GET请求
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Printf("")
+		log.Fatalf("请求失败: %v", err)
 	}
 	// defer关闭响应
 	defer func() {

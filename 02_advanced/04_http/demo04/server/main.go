@@ -20,13 +20,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		// 设置响应头
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(http.StatusMethodNotAllowed)
 		resp := Response{
 			Code:    405,
 			Message: "只支持 POST 请求",
 			Data:    nil,
 		}
-		json.NewEncoder(w).Encode(resp)
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			log.Printf("发送 405 响应失败: %v", err)
+		}
 		return
 	}
 	// 处理POST请求携带的数据

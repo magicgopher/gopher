@@ -11,14 +11,18 @@ import (
 
 // Hello 接收客户端查询参数，例如：/xxx?value=xxx
 func Hello(w http.ResponseWriter, r *http.Request) {
+	// 简单的CORS处理
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	// 只接收GET请求
 	if r.Method != "GET" {
 		http.Error(w, "请求方法有误！", http.StatusMethodNotAllowed)
 	}
-	// 定义默认结果
-	value := "Hi, this is the server."
 	// 解析参数
-	value = r.URL.Query().Get("value")
+	value := r.URL.Query().Get("value")
+	// value参数为空，那就给默认值
+	if value == "" {
+		value = "this is the server!"
+	}
 	// 拼接响应字符内容
 	content := fmt.Sprintf("Hi, %s!", value)
 	// 响应请求

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>客户端</title>
+</head>
+<body>
+<div>
+    <label for="value">内容：</label>
+    <input type="text" id="value" name="value" placeholder="请输入内容" />
+    <button onclick="sendRequest()">发送请求给服务端</button>
+</div>
+
+<div id="result" style="margin-top: 20px; color: blue;"></div>
+
+<script>
+    async function sendRequest() {
+        // 获取元素后，必须取 .value 才能拿到用户输入的字符串
+        const inputElement = document.getElementById("value");
+        const inputValue = inputElement.value;
+
+        // 构建 URL
+        // 注意：如果 inputValue 为空，Go代码逻辑里会处理默认值，所以这里直接拼接即可
+        // 使用 encodeURIComponent 防止输入特殊字符破坏 URL 格式
+        const url = `http://localhost:8080/hello?value=${encodeURIComponent(inputValue)}`;
+
+        try {
+            const response = await fetch(url);
+
+            // 建议加上状态码检查
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // 修正点 2: response 是响应对象，必须调用 .text() 解析纯文本内容
+            // 如果服务端返回的是 JSON，则应该用 .json()
+            const data = await response.text();
+
+            // 打印服务端返回的实际内容
+            console.log("服务端返回的内容:", data);
+
+            // 额外：将内容显示在页面上
+            document.getElementById("result").innerText = data;
+
+        } catch (err) {
+            console.error("请求出错:", err);
+            document.getElementById("result").innerText = "请求失败，请检查控制台";
+        }
+    }
+</script>
+</body>
+</html>

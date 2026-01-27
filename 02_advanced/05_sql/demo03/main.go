@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
@@ -62,6 +63,10 @@ func main() {
 	//deleteRowDemo()
 	// 预编译查询
 	//prepareQueryRows()
+	// 事务操作
+	//transactionDemo()
+	// 事务操作使用预编译
+	transactionPrepareDemo()
 }
 
 // User 用户结构体
@@ -160,6 +165,7 @@ func deleteRowDemo() {
 	fmt.Printf("删除操作影响的行数: %d\n", n)
 }
 
+// prepareQueryRows 预编译查询
 func prepareQueryRows() {
 	sqlStr := "SELECT * FROM user WHERE age=?"
 	stmt, err := db.Prepare(sqlStr)
@@ -196,4 +202,150 @@ func prepareQueryRows() {
 		}
 		fmt.Printf("user{id:%d name:%s age:%d sex: %s}\n", u.Id, u.Name, u.Age, u.Sex)
 	}
+}
+
+// transactionDemo 事务操作示例
+func transactionDemo() {
+	// 开启事务
+	tx, err := db.Begin()
+	if err != nil {
+		log.Printf("开启事务失败: %v\n", err)
+		return
+	}
+	// 延迟回滚机制
+	defer func() {
+		err := tx.Rollback()
+		if err != nil && !errors.Is(err, sql.ErrTxDone) {
+			log.Printf("事务回滚失败: %v\n", err)
+		}
+	}()
+	// 模拟转账逻辑的变量
+	user1 := 1
+	user2 := 2
+	money := 500.00
+	// 用户1执行扣款操作
+	fmt.Printf("从用户 %d 扣减 %.2f 元\n", user1, money)
+	res1, err := tx.Exec("UPDATE account SET balance = balance - ? WHERE user_id = ?", money, user1)
+	if err != nil {
+		log.Printf("扣款 SQL 执行错误: %v\n", err)
+		return // 触发 defer 回滚
+	}
+	// 校验：是否真的扣到了钱
+	rows1, err := res1.RowsAffected()
+	if err != nil {
+		log.Printf("获取扣款影响行数失败: %v\n", err)
+		return
+	}
+	if rows1 != 1 {
+		log.Printf("扣款失败: 找不到用户 %d 或其他原因\n", user1)
+		return // 触发 defer 回滚
+	}
+	//fmt.Println("系统即将发生严重崩溃 (Panic) ...")
+	//panic("模拟突发崩溃：机房停电了 / 代码原本有 Bug / 内存溢出")
+	// 用户2入账操作
+	fmt.Printf("给用户 %d 增加 %.2f 元\n", user2, money)
+	res2, err := tx.Exec("UPDATE account SET balance = balance + ? WHERE user_id = ?", money, user2)
+	if err != nil {
+		log.Printf("入账 SQL 执行错误: %v\n", err)
+		return // 触发 defer 回滚
+	}
+	// 处理 RowsAffected 的 error
+	rows2, err := res2.RowsAffected()
+	if err != nil {
+		log.Printf("获取入账影响行数失败: %v\n", err)
+		return // 触发 defer 回滚
+	}
+	// 业务逻辑校验
+	if rows2 != 1 {
+		log.Printf("入账失败: 找不到用户 %d\n", user2)
+		return // 触发 defer 回滚
+	}
+	// 提交事务
+	// 只有执行到这里，数据库才会真正变更
+	if err := tx.Commit(); err != nil {
+		log.Printf("事务提交失败: %v\n", err)
+		return
+	}
+	fmt.Println("转账成功！")
+}
+
+// transactionPrepareDemo 事务操作示例（使用预编译）
+func transactionPrepareDemo() {
+	// 开启事务
+	tx, err := db.Begin()
+	if err != nil {
+		log.Printf("开启事务失败: %v\n", err)
+		return
+	}
+	// 延迟回滚
+	defer func() {
+		err := tx.Rollback()
+		// 如果错误是 sql.ErrTxDone，说明事务已经 Commit 成功了，不需要报错
+		if err != nil && !errors.Is(err, sql.ErrTxDone) {
+			log.Printf("严重警告: 事务回滚失败: %v\n", err)
+		}
+	}()
+	// 模拟转账数据
+	user1 := 1
+	user2 := 2
+	money := 500.00
+	// 转账 SQL 使用加法，扣款传负数，入账传正数
+	sqlStr := "UPDATE account SET balance = balance + ? WHERE user_id = ?"
+	// 使用 tx.Prepare 预编译SQL
+	stmt, err := tx.Prepare(sqlStr)
+	if err != nil {
+		log.Printf("预编译 SQL 失败: %v\n", err)
+		return // 触发 defer tx.Rollback
+	}
+	// 延迟关闭 Stmt
+	// Stmt 也是数据库资源，必须关闭
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			log.Printf("警告: 预编译语句关闭失败: %v\n", err)
+		}
+	}()
+	// user1扣款操作
+	fmt.Printf("Step 1: 从用户 %d 扣减 %.2f 元\n", user1, money)
+	// 执行：传入负数 (-money)
+	res1, err := stmt.Exec(-money, user1)
+	if err != nil {
+		log.Printf("扣款 SQL 执行错误: %v\n", err)
+		return // 触发 defer
+	}
+	// 检查 RowsAffected 及其错误
+	rows1, err := res1.RowsAffected()
+	if err != nil {
+		log.Printf("获取扣款影响行数时出错: %v\n", err)
+		return // 触发 defer
+	}
+	if rows1 != 1 {
+		log.Printf("扣款业务失败: 未找到用户 %d 或未发生更新\n", user1)
+		return // 触发 defer
+	}
+	fmt.Println("系统即将发生严重崩溃 (Panic) ...")
+	panic("模拟突发崩溃：机房停电了 / 代码原本有 Bug / 内存溢出")
+	// user2入账操作
+	fmt.Printf("Step 2: 给用户 %d 增加 %.2f 元\n", user2, money)
+	// 传入正数 (money) - 复用同一个 stmt
+	res2, err := stmt.Exec(money, user2)
+	if err != nil {
+		log.Printf("入账 SQL 执行错误: %v\n", err)
+		return // 触发 defer
+	}
+	// 检查 RowsAffected 及其错误
+	rows2, err := res2.RowsAffected()
+	if err != nil {
+		log.Printf("获取入账影响行数时出错: %v\n", err)
+		return // 触发 defer
+	}
+	if rows2 != 1 {
+		log.Printf("入账业务失败: 未找到用户 %d\n", user2)
+		return // 触发 defer
+	}
+	// 提交事务
+	if err := tx.Commit(); err != nil {
+		log.Printf("事务提交失败: %v\n", err)
+		return
+	}
+	fmt.Println("转账成功")
 }

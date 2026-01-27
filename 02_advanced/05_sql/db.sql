@@ -30,3 +30,19 @@ VALUES ('张伟', 28, '男'),
        ('韩宇航', 37, '男'),
        ('沈梦琪', 21, '女'),
        ('郑凯文', 32, '男');
+
+# 创建账户表
+CREATE TABLE `account`
+(
+    `id`       BIGINT AUTO_INCREMENT COMMENT '主键',
+    `user_id`  BIGINT         NOT NULL COMMENT '关联的用户ID',
+    `balance`  DECIMAL(15, 2) NOT NULL DEFAULT 0.00 COMMENT '账户余额',
+    `currency` CHAR(3)        NOT NULL DEFAULT 'USD' COMMENT '货币代码',
+    PRIMARY KEY (`id`),
+    INDEX idx_user_id (`user_id`)
+) COMMENT '账户表';
+
+-- 插入两个测试账户
+INSERT INTO `account` (`user_id`, `balance`, `currency`)
+VALUES (1, 1000.00, 'CNY'),
+       (2, 500.00, 'CNY');

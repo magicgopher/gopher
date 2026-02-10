@@ -111,12 +111,21 @@ func TestPreSuffix(t *testing.T) {
 
 // TestIndexString 查找子串的位置
 func TestIndexString(t *testing.T) {
-	s1 := "abcdefg"
-	index := strings.Index(s1, "d")
-	fmt.Printf("字符串 %s 第一次出现的位置: %d\n", "d", index)
-	s2 := "Hello, 世界! PHP是世界最好的语言。"
-	index1 := strings.Index(s2, "d")
-	index2 := strings.Index(s2, "世界")
-	fmt.Printf("字符串 %s 第一次出现的位置: %d\n", "d", index1)  // 没有找到返回-1
-	fmt.Printf("字符串 %s 第一次出现的位置: %d\n", "世界", index2) // 没有找到返回-1
+	// 中文字符通常占用 3 个字节、emoji 通常占 4 字节
+	s := "hello 你好 world! 😊 123"
+	// Index: 查找完整的一段字符串（子串）
+	t.Log(strings.Index(s, "你好"))     // 6
+	t.Log(strings.Index(s, "你好 123")) // 没有找到，结果: -1
+	t.Log(strings.Index(s, "l"))      // 2
+	t.Log("==================")
+	// IndexAny: 找一组字符中的任意一个
+	t.Log(strings.IndexAny(s, "你好"))      // 6
+	t.Log(strings.IndexAny(s, "好 world")) // 2
+	t.Log(strings.IndexAny(s, "你"))       // 6
+	t.Log("==================")
+	// IndexRune：精确找单个 rune
+	t.Log(strings.IndexRune(s, '你')) // 6     （'你' 的起始字节位置）
+	t.Log(strings.IndexRune(s, '好')) // 9     （'好' 的字节位置）
+	t.Log(strings.IndexRune(s, '😊')) // 20    （emoji 通常占 4 字节）
+	t.Log(strings.IndexRune(s, 'z')) // -1
 }

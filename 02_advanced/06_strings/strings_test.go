@@ -108,3 +108,15 @@ func TestPreSuffix(t *testing.T) {
 	fmt.Println(strings.HasPrefix(str, "abb"))
 	fmt.Println(strings.HasSuffix(str, "bba"))
 }
+
+// TestIndexString 查找子串的位置
+func TestIndexString(t *testing.T) {
+	s1 := "abcdefg"
+	index := strings.Index(s1, "d")
+	fmt.Printf("字符串 %s 第一次出现的位置: %d\n", "d", index)
+	s2 := "Hello, 世界! PHP是世界最好的语言。"
+	index1 := strings.Index(s2, "d")
+	index2 := strings.Index(s2, "世界")
+	fmt.Printf("字符串 %s 第一次出现的位置: %d\n", "d", index1)  // 没有找到返回-1
+	fmt.Printf("字符串 %s 第一次出现的位置: %d\n", "世界", index2) // 没有找到返回-1
+}

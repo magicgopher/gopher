@@ -129,3 +129,61 @@ func TestIndexString(t *testing.T) {
 	t.Log(strings.IndexRune(s, '😊')) // 20    （emoji 通常占 4 字节）
 	t.Log(strings.IndexRune(s, 'z')) // -1
 }
+
+// TestMap 遍历替换字符串
+func TestMap(t *testing.T) {
+	s1 := "abc"
+	// 大小写替换
+	result1 := strings.Map(func(r rune) rune {
+		return r - 32
+	}, s1)
+	t.Log(result1)
+	// 删除某些字符串
+	s2 := "Order #12345 - Total: $99.99"
+	result2 := strings.Map(func(r rune) rune {
+		// 判断是否是数字字符
+		if r >= '0' && r <= '9' {
+			return -1
+		}
+		return r
+	}, s2)
+	t.Log(result2)
+	// 替换特定的字符
+	s3 := "123$456#789%987#654$321"
+	result3 := strings.Map(func(r rune) rune {
+		if r == '$' || r == '#' || r == '%' {
+			r = '-'
+		}
+		return r
+	}, s3)
+	t.Log(result3)
+	//
+	s4 := "Hello, 世界! 2026 Go😊"
+	result4 := strings.Map(func(r rune) rune {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || r == ' ' {
+			return r
+		}
+		return -1
+	}, s4)
+	t.Log(result4)
+	// 处理中文、emoji 等 Unicode 字符
+	s5 := "你好，世界！😊"
+	result5 := strings.Map(func(r rune) rune {
+		if r == '你' {
+			return '我'
+		}
+		if r == '😊' {
+			return '👍'
+		}
+		return r
+	}, s5)
+	t.Log(result5)
+}
+
+// TestRepeatString 重复拼接一个字符串
+func TestRepeatString(t *testing.T) {
+	result1 := strings.Repeat("abc", 3) // 将abc字符串复制三次，然后拼接再一起
+	t.Log(result1)
+	result2 := strings.Repeat("你好", 2) // 将你好字符复制两次，然后拼接再一起
+	t.Log(result2)
+}

@@ -187,3 +187,18 @@ func TestRepeatString(t *testing.T) {
 	result2 := strings.Repeat("你好", 2) // 将你好字符复制两次，然后拼接再一起
 	t.Log(result2)
 }
+
+// TestReplaceString 替换字符串
+func TestReplaceString(t *testing.T) {
+	// n：表示替换次数，-1表示全部替换，0表示不替换
+	s1 := "Hello, Java."
+	replace1 := strings.Replace(s1, "Java", "Golang", 1)
+	t.Log(replace1)
+	s2 := "C++ C++ C++"
+	replace2 := strings.Replace(s2, "C++", "Python", 2)
+	t.Log(replace2)
+	replace3 := strings.Replace(s2, "C++", "Python", -1)
+	t.Log(replace3)
+	replace4 := strings.Replace(s2, "C++", "Python", 0)
+	t.Log(replace4)
+}

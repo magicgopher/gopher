@@ -201,4 +201,34 @@ func TestReplaceString(t *testing.T) {
 	t.Log(replace3)
 	replace4 := strings.Replace(s2, "C++", "Python", 0)
 	t.Log(replace4)
+	replace5 := strings.ReplaceAll(s2, "C++", "Golang")
+	t.Log(replace5)
+}
+
+// TestSplitString 分割字符串
+func TestSplitString(t *testing.T) {
+	s1 := "123|456|789|987|654|321"
+	result1 := strings.Split(s1, "|")
+	t.Log(result1)
+	s2 := "Java$Go$Python$C$Rust"
+	// SplitN函数的n参数表示分割的次数
+	// n>0 表示最多返回 n 个子串，第 n 个子串将包含剩余所有未分割的内容。
+	// n<0 表示返回所有可能的子串，没有数量限制。
+	// n=0 表示返回nil切片
+	result2 := strings.SplitN(s2, "$", 2)
+	t.Log(result2)
+	s3 := "a,b,c,d,e,f"
+	result3 := strings.SplitAfter(s3, ",")
+	t.Log(result3)
+	result4 := strings.SplitAfterN(s3, ",", 3)
+	t.Log(result4)
+	// SplitAfterSeq 函数是1.24引入的新函数
+	// 旨在利用 Go 新加入的迭代器 (Iterator) 机制来高效地分割字符串，分割的字符串包含其后的分隔符
+	for s := range strings.SplitAfterSeq(s3, ",") {
+		t.Log(s)
+	}
+	// SplitSeq 和 SplitAfterSeq 类似，只是SplitSeq分割后的子串不会保留分割符
+	for s := range strings.SplitSeq(s3, ",") {
+		t.Log(s)
+	}
 }

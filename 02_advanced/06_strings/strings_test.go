@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"unicode"
 )
 
 // TestStringClone 复制字符串
@@ -56,6 +57,7 @@ func TestCountSubString(t *testing.T) {
 	t.Logf("字符串 s 中 1出现 %v 次\n", strings.Count(s, "1"))
 	t.Logf("字符串 s 中 2出现 %v 次\n", strings.Count(s, "2"))
 	t.Logf("字符串 s 中 99出现 %v 次\n", strings.Count(s, "99"))
+	t.Logf("字符串 s 中 空字符串出现 %v 次\n", strings.Count(s, ""))
 }
 
 // TestCutString 删除指定子字符串
@@ -231,4 +233,34 @@ func TestSplitString(t *testing.T) {
 	for s := range strings.SplitSeq(s3, ",") {
 		t.Log(s)
 	}
+}
+
+// TestToLowerAndUpper 大小写转换
+func TestToLowerAndUpper(t *testing.T) {
+	t.Log(strings.ToLower("My Name is MagicGopher!"))
+	t.Log(strings.ToLowerSpecial(unicode.TurkishCase, "Önnek İş"))
+	t.Log(strings.ToUpper("My name is jack,Nice to meet you!"))
+	t.Log(strings.ToUpperSpecial(unicode.TurkishCase, "örnek iş"))
+}
+
+// TestTrimString 修剪字符串
+func TestTrimString(t *testing.T) {
+	s1 := "!!Hello, World!!!"
+	result1 := strings.Trim(s1, "!")
+	t.Log(result1)
+	result2 := strings.TrimLeft(s1, "!")
+	t.Log(result2)
+	result3 := strings.TrimRight(s1, "!")
+	t.Log(result3)
+	result4 := strings.TrimFunc(s1, func(r rune) bool {
+		return r == '!'
+	})
+	t.Log(result4)
+	result5 := strings.TrimPrefix(s1, "!")
+	t.Log(result5)
+	result6 := strings.TrimSuffix(s1, "!")
+	t.Log(result6)
+	s2 := "  你好，Golang！  "
+	result7 := strings.TrimSpace(s2)
+	t.Log(result7)
 }

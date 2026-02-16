@@ -2,6 +2,7 @@ package stringst
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 	"unicode"
@@ -311,4 +312,15 @@ func TestReplacer(t *testing.T) {
 	input := "User <script> & code"
 	result := r.Replace(input)
 	t.Log(result)
+}
+
+// TestReader 字符串Reader
+func TestReader(t *testing.T) {
+	s := "Hello, world!"
+	r := strings.NewReader(s)
+	result, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(string(result))
 }

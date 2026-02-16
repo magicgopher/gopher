@@ -264,3 +264,38 @@ func TestTrimString(t *testing.T) {
 	result7 := strings.TrimSpace(s2)
 	t.Log(result7)
 }
+
+// TestBuilderString Builder字符串
+func TestBuilderString(t *testing.T) {
+	s1 := "hello"
+	t.Logf("地址: %p, 值: %v\n", &s1, s1)
+	s2 := s1 + ",world!"
+	t.Logf("地址: %p, 值: %v\n", &s2, s2)
+	// 使用 strings 包的 Builder{} 结构体构建字符串
+	sb := strings.Builder{}
+	sb.WriteString("hello,")
+	sb.Write([]byte("world!"))
+	sb.WriteRune('+')
+	sb.WriteByte(65)
+	t.Log(sb.Len())
+	t.Log(sb.String())
+}
+
+// TestBuilderStringPain
+func TestBuilderStringPain(t *testing.T) {
+	var sb strings.Builder
+	sb.WriteString("start")
+	// 这里发生了值拷贝！
+	//writeData(sb)
+	writeDataP(&sb)
+}
+
+// 错误写法：接收的是 Builder 的值（副本）
+func writeData(sb strings.Builder) {
+	sb.WriteString(" added")
+}
+
+// 正确写法：接收的是 *strings.Builder（指针）
+func writeDataP(sb *strings.Builder) {
+	sb.WriteString(" added")
+}

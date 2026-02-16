@@ -299,3 +299,16 @@ func writeData(sb strings.Builder) {
 func writeDataP(sb *strings.Builder) {
 	sb.WriteString(" added")
 }
+
+// TestReplacer 字符替换
+func TestReplacer(t *testing.T) {
+	r := strings.NewReplacer(
+		"<", "&lt;",
+		">", "&gt;",
+		"&", "&amp;",
+	)
+	// 进行替换
+	input := "User <script> & code"
+	result := r.Replace(input)
+	t.Log(result)
+}

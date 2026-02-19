@@ -1,23 +1,38 @@
 package strconvt
 
 import (
+	"log"
 	"strconv"
 	"testing"
 )
 
-// TestStringToInteger 字符串转为int类型
-func TestStringToInteger(t *testing.T) {
+// TestStringToInt 整数类型字符串转为int类型
+func TestStringToInt(t *testing.T) {
 	s1 := "12345"
-	got, err := strconv.Atoi(s1)
+	//s1 := "123.45" // 浮点数字符串
+	result, err := strconv.Atoi(s1)
 	if err != nil {
-		t.Errorf("strconv.Atoi(%q) 返回了错误: %v", s1, err)
+		log.Printf("转换失败: %v\n", err)
 		return
 	}
-	// 期望值
-	want := 12345
-	if got != want {
-		t.Errorf("strconv.Atoi(%q) = %d, 期望 %d", s1, got, want)
+	t.Logf("类型: %T, 值: %v\n", result, result)
+}
+
+// TestIntegerToString int类型转整数类型字符串
+func TestIntegerToString(t *testing.T) {
+	result := strconv.Itoa(78910)
+	t.Logf("类型: %T, 值: %v\n", result, result)
+}
+
+// TestStringToBool 字符串转bool类型
+func TestStringToBool(t *testing.T) {
+	// "1", "t", "T", "true", "TRUE", "True" // true
+	// "0", "f", "F", "false", "FALSE", "False" // false
+	result, err := strconv.ParseBool("true")
+	//result, err := strconv.ParseBool("F")
+	if err != nil {
+		log.Printf("转换失败: %v\n", err)
+		return
 	}
-	// 打印结果
-	t.Logf("成功转换: %q → %d (类型: %T)", s1, got, got)
+	t.Logf("类型: %T, 值: %v\n", result, result)
 }

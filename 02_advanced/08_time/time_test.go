@@ -79,3 +79,37 @@ func TestSubTime(t *testing.T) {
 	sub := date1.Sub(date2) // 从 date2 到 date1 过了多久？
 	t.Log(sub)
 }
+
+// TestEqualTime 判断两个时间是否相等
+func TestEqualTime(t *testing.T) {
+	t1 := time.Date(2026, 2, 13, 20, 0, 0, 0, time.Local)
+	t2 := time.Date(2026, 2, 13, 20, 0, 0, 0, time.Local)
+	t3 := time.Date(2026, 2, 14, 20, 0, 0, 0, time.Local)
+	t.Logf("t1 == t2, 结果: %v\n", t1.Equal(t2))
+	t.Logf("t1 == t3, 结果: %v\n", t1.Equal(t3))
+}
+
+// TestTimestamp 时间戳
+func TestTimestamp(t *testing.T) {
+	now := time.Now()
+	t.Log(now.Unix())      // 时间戳（秒）
+	t.Log(now.UnixNano())  // 时间戳（毫秒）
+	t.Log(now.UnixMicro()) // 时间戳（微秒）
+	t.Log(now.UnixMilli()) // 时间戳（纳秒）
+}
+
+// TestTimeBeforeAndAfter 在时间之前/之后
+func TestTimeBeforeAndAfter(t *testing.T) {
+	t1 := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)      // 元旦
+	t2 := time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC)      // 儿童节
+	t3 := time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC) // 跨年夜
+	t.Log(t1.Before(t2))
+	t.Log(t1.Before(t3))
+	t.Log(t2.Before(t1))
+	t.Log(t2.Before(t3))
+	t.Log("=======")
+	t.Log(t1.After(t2))
+	t.Log(t1.After(t3))
+	t.Log(t2.After(t1))
+	t.Log(t2.After(t3))
+}
